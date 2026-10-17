@@ -21,7 +21,7 @@
   --radius-md: 12px;
   --radius-sm: 8px;
   --shadow: 0 24px 60px -28px rgba(0, 0, 0, 0.85);
-  --board-max: 70dvh;
+  --board-max: 640px;
   --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
@@ -238,20 +238,24 @@ button:disabled {
 
 /* --------------------------------------------------------------------- board */
 
+/* A size container, so the board can be the largest square that fits the space
+   actually left over after the header, pad and footer: no viewport-unit maths
+   to keep in sync with the chrome around it. */
 .board-area {
-  flex: 1 1 auto;
+  flex: 1 1 0;
   min-height: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: clamp(0.75rem, 2vh, 1.25rem);
+  display: grid;
+  place-items: center;
+  container-type: size;
 }
 
 .board {
   position: relative;
-  width: min(100%, var(--board-max));
+  width: min(100%, var(--board-max)); /* fallback for no container queries */
+  width: clamp(140px, min(100%, 100cqh), var(--board-max));
   aspect-ratio: 1 / 1;
+  container-type: size;
+  container-name: board;
   border-radius: var(--radius-lg);
   background: var(--bg-elevated);
   border: 1px solid var(--border);
@@ -518,6 +522,79 @@ kbd {
   border-radius: 5px;
 }
 
+/* Panels live inside the board, so they answer to its height rather than the
+   viewport's: drop the least important lines before anything can clip. */
+@container board (max-height: 520px) {
+  .hints {
+    font-size: 0.68rem;
+    gap: 0.2rem;
+  }
+}
+
+@container board (max-height: 430px) {
+  .hints {
+    display: none;
+  }
+
+  .panel {
+    gap: 0.6rem;
+  }
+}
+
+@container board (max-height: 330px) {
+  .panel-lead,
+  .switch-label small {
+    display: none;
+  }
+
+  .panel h2 {
+    font-size: 1.2rem;
+  }
+
+  .overlay {
+    padding: 0.35rem;
+  }
+
+  .panel {
+    padding: 0.75rem;
+    gap: 0.45rem;
+  }
+
+  .segmented legend {
+    padding-bottom: 0.15rem;
+  }
+
+  .segment span {
+    padding: 0.35rem 0.3rem;
+  }
+
+  .switch {
+    padding: 0.4rem 0.5rem;
+  }
+
+  .primary-button {
+    padding: 0.55rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .ghost-button {
+    padding: 0.4rem 1rem;
+  }
+
+  .result {
+    margin: 0;
+  }
+
+  .result dd {
+    font-size: 0.95rem;
+  }
+
+  .record {
+    padding: 0.2rem 0.5rem;
+    font-size: 0.7rem;
+  }
+}
+
 /* ----------------------------------------------------------- touch controls */
 
 .dpad {
@@ -609,41 +686,20 @@ kbd {
   }
 }
 
-@media (max-width: 620px) {
-  :root {
-    --board-max: 56dvh;
-  }
-}
-
-@media (min-width: 621px) and (pointer: coarse) {
-  :root {
-    --board-max: 62dvh;
-  }
-}
-
-@media (min-width: 900px) and (min-height: 820px) {
-  :root {
-    --board-max: 640px;
-  }
-}
-
-/* Short landscape windows: keep the board visible without page scrolling. */
+/* Short landscape windows: trim the chrome so the board keeps its space. */
 @media (orientation: landscape) and (max-height: 560px) {
-  :root {
-    --board-max: 78dvh;
-  }
-
   .app {
     max-width: 100%;
-  }
-
-  .board-area {
-    flex-direction: row;
-    justify-content: center;
+    gap: 0.5rem;
   }
 
   .hints {
     display: none;
+  }
+
+  .dpad {
+    grid-template-columns: repeat(3, 2.75rem);
+    grid-template-rows: repeat(2, 2.75rem);
   }
 }
 
