@@ -1,0 +1,19 @@
+{
+  "name": "snake-game",
+  "version": "1.0.0",
+  "description": "A polished grid-based Snake game in vanilla HTML, CSS and JavaScript.",
+  "type": "module",
+  "private": true,
+  "license": "MIT",
+  "author": "Pushpa Raj Adhikari",
+  "scripts": {
+    "test": "node --test",
+    "serve": "python3 -m http.server 8000"
+  },
+  "keywords": [
+    "snake",
+    "game",
+    "canvas",
+    "vanilla-js"
+  ]
+}
