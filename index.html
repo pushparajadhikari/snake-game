@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#0a0f1a" />
+    <meta
+      name="description"
+      content="A polished grid-based Snake game built with vanilla HTML, CSS and JavaScript on a canvas."
+    />
+    <title>Snake</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%90%8D%3C/text%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="hud">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">🐍</span>
+          <h1>Snake</h1>
+        </div>
+
+        <dl class="stats" aria-label="Game statistics">
+          <div class="stat">
+            <dt>Score</dt>
+            <dd id="score">0</dd>
+          </div>
+          <div class="stat">
+            <dt>Best</dt>
+            <dd id="high-score">0</dd>
+          </div>
+          <div class="stat">
+            <dt>Level</dt>
+            <dd id="level">1</dd>
+          </div>
+        </dl>
+
+        <div class="hud-actions">
+          <button type="button" id="pause-button" class="icon-button" aria-label="Pause game" disabled>
+            <span aria-hidden="true">⏸</span>
+            <span class="icon-button-text">Pause</span>
+          </button>
+          <button
+            type="button"
+            id="mute-button"
+            class="icon-button"
+            aria-label="Mute sound"
+            aria-pressed="false"
+          >
+            <span aria-hidden="true" id="mute-icon">🔊</span>
+            <span class="icon-button-text" id="mute-text">Sound</span>
+          </button>
+        </div>
+      </header>
+
+      <main class="board-area">
+        <div class="board" id="board">
+          <canvas id="board-canvas" role="img" aria-label="Snake game board"></canvas>
+
+          <div class="overlay" id="overlay">
+            <section class="panel" id="panel-menu" aria-labelledby="panel-menu-title">
+              <h2 id="panel-menu-title">Snake</h2>
+              <p class="panel-lead">Eat, grow, and do not run out of room.</p>
+
+              <fieldset class="segmented">
+                <legend>Difficulty</legend>
+                <div class="segmented-options">
+                  <label class="segment">
+                    <input type="radio" name="difficulty" value="easy" />
+                    <span>Easy</span>
+                  </label>
+                  <label class="segment">
+                    <input type="radio" name="difficulty" value="normal" checked />
+                    <span>Normal</span>
+                  </label>
+                  <label class="segment">
+                    <input type="radio" name="difficulty" value="hard" />
+                    <span>Hard</span>
+                  </label>
+                </div>
+              </fieldset>
+
+              <label class="switch" for="walls-toggle">
+                <input type="checkbox" id="walls-toggle" checked />
+                <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+                <span class="switch-label">
+                  <strong>Solid walls</strong>
+                  <small id="walls-hint">Hitting an edge ends the run</small>
+                </span>
+              </label>
+
+              <button type="button" id="start-button" class="primary-button">Start game</button>
+
+              <ul class="hints">
+                <li><kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd> or <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> to steer</li>
+                <li><kbd>Space</kbd> or <kbd>P</kbd> pause · <kbd>R</kbd> restart · <kbd>M</kbd> mute</li>
+                <li>On touch devices, swipe the board or use the pad below</li>
+              </ul>
+            </section>
+
+            <section class="panel" id="panel-paused" aria-labelledby="panel-paused-title" hidden>
+              <h2 id="panel-paused-title">Paused</h2>
+              <p class="panel-lead">Take your time. The board is waiting.</p>
+              <button type="button" id="resume-button" class="primary-button">Resume</button>
+              <button type="button" id="paused-restart-button" class="ghost-button">Restart run</button>
+            </section>
+
+            <section class="panel" id="panel-gameover" aria-labelledby="panel-gameover-title" hidden>
+              <h2 id="panel-gameover-title">Game over</h2>
+              <p class="panel-lead" id="gameover-reason">You ran into a wall.</p>
+              <p class="record" id="record-badge" hidden>New personal best</p>
+              <dl class="result">
+                <div>
+                  <dt>Score</dt>
+                  <dd id="final-score">0</dd>
+                </div>
+                <div>
+                  <dt>Best</dt>
+                  <dd id="final-high-score">0</dd>
+                </div>
+                <div>
+                  <dt>Length</dt>
+                  <dd id="final-length">3</dd>
+                </div>
+              </dl>
+              <button type="button" id="restart-button" class="primary-button">Play again</button>
+              <button type="button" id="menu-button" class="ghost-button">Back to menu</button>
+            </section>
+
+            <section class="panel" id="panel-win" aria-labelledby="panel-win-title" hidden>
+              <h2 id="panel-win-title">Board cleared</h2>
+              <p class="panel-lead">You filled every square. That is the whole game.</p>
+              <dl class="result">
+                <div>
+                  <dt>Score</dt>
+                  <dd id="win-score">0</dd>
+                </div>
+                <div>
+                  <dt>Best</dt>
+                  <dd id="win-high-score">0</dd>
+                </div>
+              </dl>
+              <button type="button" id="win-restart-button" class="primary-button">Play again</button>
+              <button type="button" id="win-menu-button" class="ghost-button">Back to menu</button>
+            </section>
+          </div>
+        </div>
+
+        <nav class="dpad" id="dpad" aria-label="Direction controls">
+          <button type="button" class="dpad-button up" data-direction="up" aria-label="Move up">
+            <span aria-hidden="true">▲</span>
+          </button>
+          <button type="button" class="dpad-button left" data-direction="left" aria-label="Move left">
+            <span aria-hidden="true">◀</span>
+          </button>
+          <button type="button" class="dpad-button right" data-direction="right" aria-label="Move right">
+            <span aria-hidden="true">▶</span>
+          </button>
+          <button type="button" class="dpad-button down" data-direction="down" aria-label="Move down">
+            <span aria-hidden="true">▼</span>
+          </button>
+        </nav>
+      </main>
+
+      <footer class="footer">
+        <p id="status-line">Choose a difficulty and press start.</p>
+      </footer>
+    </div>
+
+    <p class="visually-hidden" id="announcer" role="status" aria-live="polite"></p>
+
+    <noscript>
+      <p class="noscript">This game needs JavaScript enabled.</p>
+    </noscript>
+
+    <script type="module" src="js/main.js"></script>
+  </body>
+</html>
